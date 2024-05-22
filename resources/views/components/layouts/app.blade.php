@@ -24,9 +24,13 @@
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center">
                 <img class="w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500" src="{{ asset('/images/icons8-user-80.png') }}" alt="Bordered avatar">
-                <span class="ml-2">Jojok</span> <!-- Added margin-left to create space between the image and the text -->
+                <span class="ml-2"> {{Auth::user()->nama_lengkap}}</span>
             </div>
-            <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Log Out</button>
+            <form action="{{ route('logout') }}" method="POST" class="inline-block">
+                @csrf
+                <button type="submit" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Log Out</button>
+            </form>
+
         </div>
 
         {{$slot}}
