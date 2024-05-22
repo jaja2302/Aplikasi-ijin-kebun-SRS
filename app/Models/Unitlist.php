@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Unitlist extends Model
 {
     use HasFactory;
+
+    protected $table = 'unit';
+
+
+
+    protected $fillable = [
+        'nama'
+    ];
+    public $timestamps = false;
 }

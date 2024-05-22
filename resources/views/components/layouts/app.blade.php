@@ -22,11 +22,13 @@
     <div class="container mx-auto p-4">
         <!-- Header -->
         <div class="flex items-center justify-between mb-8">
-
-            <img class="w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500" src="{{asset ('/images/icons8-user-80.png')}}" alt="Bordered avatar">
-
-            <button class="px-4 py-2 bg-gray-800 text-white rounded">Log Out</button>
+            <div class="flex items-center">
+                <img class="w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500" src="{{ asset('/images/icons8-user-80.png') }}" alt="Bordered avatar">
+                <span class="ml-2">Jojok</span> <!-- Added margin-left to create space between the image and the text -->
+            </div>
+            <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Log Out</button>
         </div>
+
         {{$slot}}
     </div>
 
