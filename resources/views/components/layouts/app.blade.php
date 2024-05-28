@@ -35,7 +35,13 @@
 
         {{$slot}}
     </div>
-
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('refresh', (event) => {
+                location.reload();
+            });
+        });
+    </script>
     @filamentScripts
     @livewireScripts
 </body>

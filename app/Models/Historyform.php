@@ -24,5 +24,14 @@ class Historyform extends Model
         'status'
 
     ];
+
+    public function Requestor()
+    {
+        return $this->belongsTo(Pengguna::class, 'user_id', 'user_id');
+    }
+    public function Unit()
+    {
+        return $this->belongsTo(Unitlist::class, 'unit_id', 'id');
+    }
     public $timestamps = false;
 }

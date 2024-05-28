@@ -1,5 +1,5 @@
 <div>
-    <form class="mt-8 space-y-6" action="#">
+    <form class="mt-8 space-y-6" wire:submit="create">
         {{ $this->form }}
 
         <div class="pt-4 flex justify-end">
@@ -9,4 +9,5 @@
 
         </div>
     </form>
+    <x-filament-actions::modals />
 </div>

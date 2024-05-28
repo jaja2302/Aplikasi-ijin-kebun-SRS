@@ -11,6 +11,11 @@ use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use App\Models\Unitlist;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
+use App\Models\Historyform;
+use Carbon\Carbon;
 
 class Inputformijin extends Component implements HasForms
 {
@@ -30,26 +35,82 @@ class Inputformijin extends Component implements HasForms
             ->schema([
                 TextInput::make('nama')
                     ->required()
+                    ->default(auth()->user()->nama_lengkap)
+                    ->readOnly()
                     ->columnSpanFull(),
                 DatePicker::make('tanggal_keluar')
                     ->label('Tanggal Keluar')
                     ->required()
-                    ->format('d/m/Y'),
+                    ->format('Y-m-d'),
                 DatePicker::make('tanggal_kembali')
                     ->label('Tanggal Kembali')
                     ->required()
-                    ->format('d/m/Y'),
+                    ->format('Y-m-d'),
                 Select::make('kendaraan')
                     ->required()
+                    ->createOptionForm([
+                        TextInput::make('name_doc')
+                            ->label('New')
+                            ->required(),
+                    ])
                     ->options([
                         'Motor' => 'Motor',
                         'Mobil' => 'Mobil',
                     ]),
+                Select::make('unit_kerja')
+                    ->label('Unit Kerja')
+                    // ->required()
+                    ->options(Unitlist::query()->pluck('nama', 'id'))
+                    ->createOptionForm([
+                        TextInput::make('unit_create')
+                            ->label('Unit Kerja')
+                            ->required(),
+                    ])
+                    ->createOptionUsing(function (array $data): int {
+                        $check = Unitlist::where('nama', $data['unit_create'])->first();
+
+                        if ($check) {
+                            Notification::make()
+                                ->warning()
+                                ->title('Warning')
+                                ->body('Unit Kerja dengan nama ini sudah ada didalam database, Silahkan ganti dengan nama yang lainnnya.')
+                                ->send();
+
+
+                            return 0;
+                        } else {
+                            DB::beginTransaction();
+                            try {
+                                Notification::make()
+                                    ->success()
+                                    ->title('Success')
+                                    ->body('Unit kerja berhasil ditambah')
+                                    ->send();
+
+                                $locs = Unitlist::create(['nama' => $data['unit_create']]);
+
+                                DB::commit();
+                                return $locs->id;
+                            } catch (\Throwable $th) {
+                                DB::rollBack();
+
+                                Notification::make()
+                                    ->danger()
+                                    ->title('Error')
+                                    ->body($th)
+                                    ->send();
+
+                                return 0;
+                            }
+                        }
+                    }),
                 TextInput::make('plat_nomor')
-                    ->required(),
+                    ->required()
+                    ->columnSpanFull(),
                 TextInput::make('tujuan')
                     ->required()
                     ->columnSpanFull(),
+
                 TextInput::make('keperluan')
                     ->required()
                     ->columnSpanFull(),
@@ -65,7 +126,7 @@ class Inputformijin extends Component implements HasForms
                     ->required()
                     ->label('Pilih atasan II')
                     ->options([
-                        '1' => 'Jojok',
+                        '1' => 'Jojoka',
                         '2' => 'Dendi',
                         '3' => 'Dimas',
                     ]),
@@ -76,7 +137,39 @@ class Inputformijin extends Component implements HasForms
 
     public function create(): void
     {
-        dd($this->form->getState());
+        // dd($this->form->getState());
+        $form = $this->form->getState();
+
+
+        try {
+            // Create a new Administrator instance
+            $administrator = new Historyform();
+            $administrator->user_id = auth()->user()->user_id;
+            $administrator->unit_id = $form['unit_kerja'];
+            $administrator->tanggal_keluar = Carbon::parse($form['tanggal_keluar']);
+            $administrator->tanggal_kembali = Carbon::parse($form['tanggal_kembali']);
+            $administrator->lokasi_tujuan = $form['tujuan'];
+            $administrator->keperluan = $form['keperluan'];
+            $administrator->atasan_1 = $form['atasan_1'];
+            $administrator->atasan_2 = $form['atasan_2'];
+
+            $administrator->save();
+
+            Notification::make()
+                ->success()
+                ->title('Success')
+                ->body('Permintaan Ijin keluar berhasil di tambahkan')
+                ->send();
+            $this->form->fill();
+            $this->dispatch('refresh');
+        } catch (\Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title('danger')
+                ->body($e)
+                ->send();
+            // $this->form->phone_number->fill();
+        }
     }
 
     public function render(): View
