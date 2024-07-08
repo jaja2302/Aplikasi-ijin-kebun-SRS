@@ -34,6 +34,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Actions\Action as TableAction;
 use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Notifications\Notification;
 
 class Dashboard extends Component implements HasForms, HasTable, HasActions
 {
@@ -169,12 +170,14 @@ class Dashboard extends Component implements HasForms, HasTable, HasActions
                         '2' => ($model->status == 2 && $model->atasan_2 == auth()->id()) ? 'MENUNGGU PERSETUJUAN ANDA' : 'MENUNGGU PERSETUJUAN ATASAN 2',
                         '3' => 'DITOLAK',
                         '4' => 'DISETUJUI',
+                        '5' => 'KADALUARSA',
                     })
                     ->color(fn (Model $model): string => match ($model->status) {
                         '1' => 'warning',
                         '2' => 'info',
                         '3' => 'danger',
                         '4' => 'success',
+                        '5' => 'warning',
                     }),
             ])
             ->headerActions([
@@ -183,7 +186,27 @@ class Dashboard extends Component implements HasForms, HasTable, HasActions
                     ->icon('heroicon-m-arrow-up-tray')
                     ->color(Color::Emerald)
                     ->action(function () {
-                        $this->dispatch('openModalSubmission');
+
+                        $user = auth()->user()->user_id;
+
+                        $check = FormSuratIzin::where('user_id', $user)->latest()->first();
+                        // dd($check);
+                        if ($check != null && $check->status != 4) {
+                            $tanggal_keluar = Carbon::parse($check->tanggal_keluar);
+                            $getdate = Carbon::now();
+
+                            if ($tanggal_keluar->diffInDays($getdate) < 7) {
+                                Notification::make()
+                                    ->danger()
+                                    ->color('danger')
+                                    ->body('Permintaan Gagal karena anda masih memiliki izin yang belum di approved')
+                                    ->send();
+                            } else {
+                                $this->dispatch('openModalSubmission');
+                            }
+                        } else {
+                            $this->dispatch('openModalSubmission');
+                        }
                     }),
                 TableAction::make('data_review')
                     ->label('Review Pengajuan')

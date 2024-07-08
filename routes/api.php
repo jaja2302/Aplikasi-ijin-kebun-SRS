@@ -10,3 +10,4 @@ Route::middleware('web')->group(function () {
 
 Route::get('/generatePdfIzinKebun', [Login::class, 'generatePdfIzinKebun'])->name('generatePdfIzinKebun');
 Route::get('/deletePdfIzinKebun', [Login::class, 'deletePdfIzinKebun'])->name('deletePdfIzinKebun');
+Route::get('/checkingstatus', [Login::class, 'checkingstatus'])->name('checkingstatus');

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\FormSuratIzin;
 use App\Models\ListDepartement;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,8 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Facades\RateLimiter;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Filament\Forms\Concerns\InteractsWithForms;
+
+use function Laravel\Prompts\form;
 
 class Login extends Component implements HasForms
 {
@@ -218,6 +221,61 @@ class Login extends Component implements HasForms
             ], 200);
         }
     }
+    public function checkingstatus(Request $request)
+    {
+        $email = $request->query('user');
+        $password = $request->query('pw');
+
+        if (isset($email) && isset($password)) {
+            $user = User::where('email', $email)
+                ->where('password', $password)
+                ->first();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'UNAUTHORIZED ACCESS',
+                    'code' => 0
+                ], 200);
+            } else {
+                $data = FormSuratIzin::whereNotIn('status', ['4', '3', '5'])->get();
+                $expireddate = Carbon::now();
+                $request_expired = [];
+
+                foreach ($data as $value) {
+                    $tanggal_keluar = Carbon::parse($value['tanggal_keluar']);
+                    $oneMonthAgo = $expireddate->copy()->subMonth();
+                    $oneWeekAgo = $expireddate->copy()->subWeek();
+
+                    // Check if the request is older than one month or one week
+                    if ($tanggal_keluar->lessThan($oneMonthAgo) || $tanggal_keluar->lessThan($oneWeekAgo)) {
+                        $request_expired[] = $value;
+                    }
+                }
+
+                if (!empty($request_expired)) {
+                    foreach ($request_expired as $expiredRequest) {
+                        $expiredRequest->status = 5;
+                        $expiredRequest->save();
+                    }
+                    return response()->json([
+                        'status' => 'Status di ubah kadaluarsa',
+                        'code' => 0
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'status' => 'Tidak ada data bisa di ubah',
+                        'code' => 0
+                    ], 200);
+                }
+            }
+        } else {
+            return response()->json([
+                'status' => 'kosong',
+                'code' => 0
+            ], 200);
+        }
+    }
+
 
     public function render()
     {
