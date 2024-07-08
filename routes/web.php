@@ -1,16 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Livewire\Login;
 use App\Livewire\Dashboard;
-use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
-
-Route::get('/', [AuthController::class, 'index'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/linkstorage', function () {
-    Artisan::call('storage:link');
+Route::middleware('guest')->group(function () {
+    Route::get('/', Login::class)->name('login');
 });
-Route::middleware(['auth'])->group(function () {
+
+Route::middleware('auth')->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 });

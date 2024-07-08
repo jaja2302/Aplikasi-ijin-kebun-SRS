@@ -1,0 +1,1 @@
+[20-Jun-2024 04:21:36 UTC] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.2.0". You are running 7.4.33. in /home/u104419741/domains/srs-ssms.com/public_html/subdomain/izinkebun/vendor/composer/platform_check.php on line 24
